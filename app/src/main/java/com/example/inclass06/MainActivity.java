@@ -12,33 +12,27 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.SeekBar;
-import android.widget.TextView;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.concurrent.Executors;
 
 
 public class MainActivity extends AppCompatActivity {
 
     Button threadButton;
+    Button btn_asynchtask;
     ExecutorService threadPool;
     Handler handler;
     ProgressBar progressBar;
     String TAG = "demo";
     SeekBar seekBar;
     TextView txtprogress;
-    int seekBarProgress;
+    int seekValue;
+
     public int selectedProgress = 0;
 
     @Override
@@ -52,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         seekBar = findViewById(R.id.seekBar);
         txtprogress = findViewById(R.id.textView_complexity);
 
-        Button btn_asynchtask = findViewById(R.id.btn_asynckTask);
+        btn_asynchtask = findViewById(R.id.btn_asynckTask);
         btn_asynchtask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,9 +54,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        SeekBar seekBar =findViewById( R.id.seekBar);
         seekBar.setMax(20);
-        int seekValue = seekBar.getProgress();
+        seekValue = seekBar.getProgress();
         String x = Integer.toString(seekValue) + " times";
         Log.d("demo", "onCreate: "+x);
         TextView complexity = findViewById(R.id.textView_complexity);
@@ -72,19 +65,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
-                // TODO Auto-generated method stub
-                complexity.setText(String.valueOf(progress) + " times");
+                txtprogress.setText(progress+" "+getResources().getString(R.string.seekbar_count));
                 selectedProgress = progress;
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
 
         });
@@ -98,26 +88,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                txtprogress.setText(progress+" "+getResources().getString(R.string.seekbar_count));
-                seekBarProgress = progress;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
         handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
-
                 return false;
             }
         });
@@ -127,8 +100,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            Log.d(TAG, "run: "+seekBarProgress);
-            for(int i=0;i<seekBarProgress;i++) {
+            Log.d(TAG, "run: "+seekValue);
+            for(int i=0;i<seekValue;i++) {
                 double randomNumbers = HeavyWork.getNumber();
                 Log.d(TAG, "run: ");
             }
@@ -136,8 +109,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    
 
     public class DoWorkAsynch extends AsyncTask<Integer,Integer,Double> {
         double number;
