@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Double> result = new ArrayList<>();
     ArrayAdapter<Double> resultList;
     int arraySize;
+    Double average = 0.0;
 
     public int selectedProgress = 0;
 
@@ -70,13 +71,41 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
+                threadArray.clear();
                 txtprogress.setText(progress+" "+getResources().getString(R.string.seekbar_count));
+
                 selectedProgress = progress;
                 Log.d(TAG, "onProgressChanged: "+selectedProgress);
 
-                for(int i=0;i<progress;i++){
+                for(int i=0;i<selectedProgress;i++){
                     threadPool.execute(new DoWorkThread());
                 }
+
+                handler = new Handler(new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(@NonNull Message msg) {
+                        progressBar.setProgress(0);
+                        progressBar.setMax(20);
+                        progressBar.setProgress(progressBar.getProgress()+1);
+                        threadArray.add((Double) msg.obj);
+                        Double sum = 0.0;
+                        int size = threadArray.size();
+                        arraySize = size;
+                        sum = ((Double) msg.obj).doubleValue()+sum;
+                        Double average = sum / (size);
+                        Log.d(TAG, "handleMessage: "+arraySize+threadArray);
+
+                        if(!threadButton.isEnabled()){
+                            threadAdapter = new ArrayAdapter<Double>(MainActivity.this, android.R.layout.simple_list_item_1,
+                                    android.R.id.text1,threadArray);
+                            listviewresult.setAdapter(threadAdapter);
+                            threadAdapter.notifyDataSetChanged();
+//                                    txtaverage.setText(average+"");
+                        }
+                        return false;
+                    }
+                });
+
             }
 
             @Override
@@ -85,37 +114,15 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
-        handler = new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                progressBar.setProgress(0);
-                progressBar.setMax(20);
-                progressBar.setProgress(progressBar.getProgress()+1);
-                Double sum = 0.0;
-                int size = threadArray.size();
-                arraySize = size;
-                sum = ((Double) msg.obj).doubleValue()+sum;
-               Double average = sum/(size);
-               Log.d(TAG, "handleMessage: "+threadArray);
-
-                if(!threadButton.isEnabled()){
-                    threadArray.add((Double) msg.obj);
-                    threadAdapter = new ArrayAdapter<Double>(MainActivity.this, android.R.layout.simple_list_item_1,
-                            android.R.id.text1,threadArray);
-                    listviewresult.setAdapter(threadAdapter);
-                    threadAdapter.notifyDataSetChanged();
-                }
-//                txtaverage.setText(average+"");
-                return false;
+                threadButton.setEnabled(true);
+                btn_asynchtask.setEnabled(true);
             }
         });
         threadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 threadPool.execute(new DoWorkThread());
+
                 progressBar.setVisibility(View.VISIBLE);
                 p.setText(arraySize+getResources().getString(R.string.slash)+selectedProgress);
                 btn_asynchtask.setEnabled(false);
