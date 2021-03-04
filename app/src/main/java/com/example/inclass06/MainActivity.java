@@ -9,13 +9,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import android.os.AsyncTask;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import java.util.concurrent.Executors;
@@ -35,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ArrayList<Double> threadArray = new ArrayList<>(20);
     ArrayAdapter threadAdapter;
+    ListView listviewresult;
+    TextView txtprogress,txtprogresshappened,txtaverage;
+    int seekValue;
+    ArrayList<Double> result = new ArrayList<>();
+    ArrayAdapter<Double> resultList;
 
     public int selectedProgress = 0;
 
@@ -52,12 +57,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         progressBar.setVisibility(View.GONE);
+        txtprogresshappened = findViewById(R.id.textview_progressnumber);
+        txtaverage = findViewById(R.id.textView_average);
+        progressBar.setVisibility(View.INVISIBLE);
+
+
 
         btn_asynchtask = findViewById(R.id.btn_asynckTask);
         btn_asynchtask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 new DoWorkAsynch().execute(selectedProgress);
+                btn_asynchtask.setEnabled(false);
+                threadButton.setEnabled(false);
             }
         });
 
@@ -84,9 +96,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-//        ListView listviewresult = findViewById(R.id.Listview_complexity);
-//        ArrayAdapter<Integer> resultadapter = new ArrayAdapter<>();
-        //listviewresult.setAdapter();
+
+         listviewresult = findViewById(R.id.Listview_complexity);
+         Log.d(TAG, "onCreate: result"+result);
 
         threadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
                 threadPool.execute(new DoWorkThread());
                 progressBar.setVisibility(View.VISIBLE);
                 p.setText(""+getResources().getString(R.string.slash)+selectedProgress);
+                btn_asynchtask.setEnabled(false);
+                threadButton.setEnabled(false);
             }
         });
 
@@ -135,44 +149,57 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public class DoWorkAsynch extends AsyncTask<Integer,Integer,Double> {
+    public class DoWorkAsynch extends AsyncTask<Integer, Double, ArrayList<Double>> {
         double number;
         ProgressDialog progressDialog;
-
+        int i,avg;
+        Double average = 0.0;
+        //ArrayList<Double> res =
 
         @Override
         protected void onPreExecute() {
-            progressDialog = new ProgressDialog(MainActivity.this);
-            progressDialog.setMessage("Average");
-            progressDialog.setMax(selectedProgress);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.setCancelable(false);
-            progressDialog.show();
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setMax(selectedProgress-1);
+            progressBar.setProgress(0);//initially progress is 0
+            txtprogresshappened.setText(0 +"/" +selectedProgress);
+            txtaverage.setText(getResources().getString(R.string.average)+" ");
+            resultList =
+                    new ArrayAdapter<Double>(MainActivity.this, android.R.layout.simple_list_item_1,android.R.id.text1, result);
+            listviewresult.setAdapter(resultList);
         }
 
         @Override
-        protected void onPostExecute(Double aDouble) {
-            progressDialog.dismiss();
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            Log.d("TAG", "onProgressUpdate: "+values[0]);
-            progressDialog.setProgress(values[0]);
-        }
-
-        @Override
-        protected Double doInBackground(Integer... params) {
-            ArrayList<Double> result = new ArrayList<>();
-            int complexity_times = params[0];
-            for(int i=0;i<complexity_times;i++){
-                  result.add(HeavyWork.getNumber());
-                  publishProgress(i);
+        protected ArrayList<Double> doInBackground(Integer... integers) {
+            Double sum = 0.0;
+            int complexity_times = integers[0];
+            for(i=0;i<complexity_times;i++){
+                Double num = HeavyWork.getNumber();
+                result.add(num);
+                progressBar.setProgress(i);
+                sum = sum + num;
+                average = sum/(i+1);
+                publishProgress(average,Double.valueOf(i));
+                Log.d(TAG, "doInBackground: average "+i+" " +average);
             }
-            Log.d("TAG", "doInBackground: "+result);
-            return null;
+            Log.d(TAG, "doInBackground: result "+result);
+            Log.d(TAG, "doInBackground: final average "+average);
+            return result;
         }
-    }
-    }
 
+        @Override
+        protected void onProgressUpdate(Double... values) {
+            Log.d(TAG, "onProgressUpdate: "+values[0]+""+values[1]);
+            progressBar.setProgress(values[1].intValue());
+            txtprogresshappened.setText(i +"/" +selectedProgress);
+            txtaverage.setText(getResources().getString(R.string.average)+" " +values[0]);
+            resultList.notifyDataSetChanged();
+        }
 
+        @Override
+        protected void onPostExecute(ArrayList<Double> s) {
+            threadButton.setEnabled(true);
+            btn_asynchtask.setEnabled(true);
+        }
+
+    }
+}
