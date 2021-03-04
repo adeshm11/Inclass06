@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     String TAG = "demo";
     SeekBar seekBar;
-    TextView txtprogress;
     TextView p;
     ListView listView;
     ArrayList<Double> threadArray = new ArrayList<>(20);
