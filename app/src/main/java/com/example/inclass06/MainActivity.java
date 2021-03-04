@@ -2,12 +2,9 @@ package com.example.inclass06;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
@@ -19,7 +16,6 @@ import android.os.AsyncTask;
 import android.widget.Button;
 import android.widget.ListView;
 import java.util.concurrent.Executors;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter threadAdapter;
     ListView listviewresult;
     TextView txtprogress,txtprogresshappened,txtaverage;
-    int seekValue;
     ArrayList<Double> result = new ArrayList<>();
     ArrayAdapter<Double> resultList;
     int arraySize;
@@ -49,12 +44,11 @@ public class MainActivity extends AppCompatActivity {
 
         threadPool = Executors.newFixedThreadPool(2);
         threadButton = findViewById(R.id.btnThread);
-        progressBar = findViewById(R.id.progressBar);
-        seekBar = findViewById(R.id.seekBar);
+        progressBar = findViewById(R.id.progressBar);seekBar = findViewById(R.id.seekBar);
         txtprogress = findViewById(R.id.textView_complexity);
         p = findViewById(R.id.tvProgress);
         progressBar.setVisibility(View.GONE);
-        txtprogresshappened = findViewById(R.id.textview_progressnumber);
+        txtprogresshappened = findViewById(R.id.tvProgress);
         txtaverage = findViewById(R.id.textView_average);
         progressBar.setVisibility(View.INVISIBLE);
         btn_asynchtask = findViewById(R.id.btn_asynckTask);
@@ -144,18 +138,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class DoWorkAsynch extends AsyncTask<Integer, Double, ArrayList<Double>> {
-        double number;
-        ProgressDialog progressDialog;
-        int i,avg;
+        int i;
         Double average = 0.0;
 
         @Override
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setMax(selectedProgress-1);
-            progressBar.setProgress(0);//initially progress is 0
             txtprogresshappened.setText(0 +"/" +selectedProgress);
-            txtaverage.setText(getResources().getString(R.string.average)+" ");
+            txtaverage.setText(getResources().getString(R.string.average)+"0.0");
             resultList =
                     new ArrayAdapter<Double>(MainActivity.this, android.R.layout.simple_list_item_1,android.R.id.text1, result);
             listviewresult.setAdapter(resultList);
@@ -163,29 +154,26 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Double> doInBackground(Integer... integers) {
-            Double sum = 0.0;
             int complexity_times = integers[0];
-            for(i=0;i<complexity_times;i++){
+            for(i=0;i<complexity_times;i++) {
                 Double num = HeavyWork.getNumber();
-                result.add(num);
-                progressBar.setProgress(i);
-                sum = sum + num;
-                average = sum/(i+1);
-                publishProgress(average,Double.valueOf(i));
-                Log.d(TAG, "doInBackground: average "+i+" " +average);
+                publishProgress(num, Double.valueOf(i));
             }
-            Log.d(TAG, "doInBackground: result "+result);
-            Log.d(TAG, "doInBackground: final average "+average);
             return result;
         }
 
         @Override
         protected void onProgressUpdate(Double... values) {
-            Log.d(TAG, "onProgressUpdate: "+values[0]+""+values[1]);
-            progressBar.setProgress(values[1].intValue());
+            Double sum = 0.0;
+            sum = sum + values [0];
+            Integer progress =values[1].intValue();
+            average = sum / (progress+1);
+            progressBar.setProgress(progress);
             txtprogresshappened.setText(i +"/" +selectedProgress);
-            txtaverage.setText(getResources().getString(R.string.average)+" " +values[0]);
-           resultList.notifyDataSetChanged();
+            txtaverage.setText(getResources().getString(R.string.average)+" " +average);
+            result.add(values[0]);
+            listviewresult.setAdapter(resultList);
+            resultList.notifyDataSetChanged();
         }
 
         @Override
