@@ -31,7 +31,10 @@ public class MainActivity extends AppCompatActivity {
     String TAG = "demo";
     SeekBar seekBar;
     TextView txtprogress;
-    int seekValue;
+    TextView p;
+    ListView listView;
+    ArrayList<Double> threadArray = new ArrayList<>(20);
+    ArrayAdapter threadAdapter;
 
     public int selectedProgress = 0;
 
@@ -45,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         seekBar = findViewById(R.id.seekBar);
         txtprogress = findViewById(R.id.textView_complexity);
+        p = findViewById(R.id.tvProgress);
+
+
+        progressBar.setVisibility(View.GONE);
 
         btn_asynchtask = findViewById(R.id.btn_asynckTask);
         btn_asynchtask.setOnClickListener(new View.OnClickListener() {
@@ -55,11 +62,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         seekBar.setMax(20);
-        seekValue = seekBar.getProgress();
-        String x = Integer.toString(seekValue) + " times";
-        Log.d("demo", "onCreate: "+x);
-        TextView complexity = findViewById(R.id.textView_complexity);
-        complexity.setText(x);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
 
             @Override
@@ -67,6 +69,10 @@ public class MainActivity extends AppCompatActivity {
                                           boolean fromUser) {
                 txtprogress.setText(progress+" "+getResources().getString(R.string.seekbar_count));
                 selectedProgress = progress;
+
+                for(int i=0;i<progress;i++){
+                    threadPool.execute(new DoWorkThread());
+                }
             }
 
             @Override
@@ -78,34 +84,53 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        ListView listviewresult = findViewById(R.id.Listview_complexity);
+//        ListView listviewresult = findViewById(R.id.Listview_complexity);
 //        ArrayAdapter<Integer> resultadapter = new ArrayAdapter<>();
         //listviewresult.setAdapter();
+
         threadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                threadPool.execute(new DoWork());
+                threadPool.execute(new DoWorkThread());
+                progressBar.setVisibility(View.VISIBLE);
+                p.setText(""+getResources().getString(R.string.slash)+selectedProgress);
             }
         });
 
         handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
+                threadArray.add((Double) msg.obj);
+
+//                ArrayList<Double> receivedMessage = (ArrayList<Double>) msg.getData().get(DoWorkThread.RANDOM_ARRAY);
+//                Log.d(TAG, "handleMessage: "+receivedMessage);
+
+                threadAdapter = new ArrayAdapter<Double>(MainActivity.this, android.R.layout.simple_list_item_1,
+                        android.R.id.text1,threadArray);
+
+                listView = findViewById(R.id.Listview_complexity);
+                listView.setAdapter(threadAdapter);
+                threadAdapter.notifyDataSetChanged();
                 return false;
             }
         });
     }
 
-    public class DoWork implements Runnable{
+    public class DoWorkThread implements Runnable{
+
+        ArrayList<Double> randomArray = new ArrayList<Double>();
+        double randomNumber;
+        static final String RANDOM_ARRAY = "RANDOM_ARRAY";
 
         @Override
         public void run() {
-            Log.d(TAG, "run: "+seekValue);
-            for(int i=0;i<seekValue;i++) {
-                double randomNumbers = HeavyWork.getNumber();
-                Log.d(TAG, "run: ");
-            }
-            Log.d(TAG, "run: end");
+            HeavyWork heavyWork = new HeavyWork();
+            randomNumber = heavyWork.getNumber();
+
+            Message message = new Message();
+            message.obj = randomNumber;
+
+            handler.sendMessage(message);
         }
     }
 

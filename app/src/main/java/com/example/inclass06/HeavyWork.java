@@ -4,7 +4,7 @@ import java.util.Random;
 
 
 public class HeavyWork {
-	public static final long DELAY_MILLI_SECS = 2000;
+	public static final long DELAY_MILLI_SECS = 200;
 
 	public static double getNumber(){
 		addSomeDelay(DELAY_MILLI_SECS);
