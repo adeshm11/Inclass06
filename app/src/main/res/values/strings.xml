@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MainActivity</string>
     <string name="btn_thread">Generate Using Thread</string>
-    <string name="btn_asynchTask">Generate Using AsynchTask</string>
+    <string name="btn_asynchTask">Generate Using AsyncTask</string>
     <string name="seekbarTitle">Select Complexity</string>
     <string name="seekbar_count">Times</string>
     <string name="average">Average: </string>

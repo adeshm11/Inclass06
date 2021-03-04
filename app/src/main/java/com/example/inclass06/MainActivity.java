@@ -1,9 +1,14 @@
+/*
+Amruta Deshmukh and Komal Patel
+MainActivity.java
+In Class 06
+ */
+
 package com.example.inclass06;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -35,14 +40,12 @@ public class MainActivity extends AppCompatActivity {
     int seekValue;
     ArrayList<Double> result = new ArrayList<>();
     ArrayAdapter<Double> resultList;
-
     public int selectedProgress = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         threadPool = Executors.newFixedThreadPool(2);
         threadButton = findViewById(R.id.btnThread);
         progressBar = findViewById(R.id.progressBar);
@@ -51,9 +54,6 @@ public class MainActivity extends AppCompatActivity {
         txtprogresshappened = findViewById(R.id.textview_progressnumber);
         txtaverage = findViewById(R.id.textView_average);
         progressBar.setVisibility(View.INVISIBLE);
-
-
-
         btn_asynchtask = findViewById(R.id.btn_asynckTask);
         btn_asynchtask.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
          listviewresult = findViewById(R.id.Listview_complexity);
-         Log.d(TAG, "onCreate: result"+result);
 
         threadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class DoWork implements Runnable{
-
         @Override
         public void run() {
             Log.d(TAG, "run: "+seekValue);
@@ -124,11 +122,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     public class DoWorkAsynch extends AsyncTask<Integer, Double, ArrayList<Double>> {
-        double number;
-        ProgressDialog progressDialog;
-        int i,avg;
+        int i;
         Double average = 0.0;
-        //ArrayList<Double> res =
 
         @Override
         protected void onPreExecute() {
@@ -144,28 +139,24 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Double> doInBackground(Integer... integers) {
-            Double sum = 0.0;
             int complexity_times = integers[0];
-            for(i=0;i<complexity_times;i++){
+            for(i=0;i<complexity_times;i++) {
                 Double num = HeavyWork.getNumber();
-                result.add(num);
-                progressBar.setProgress(i);
-                sum = sum + num;
-                average = sum/(i+1);
-                publishProgress(average,Double.valueOf(i));
-                Log.d(TAG, "doInBackground: average "+i+" " +average);
+                publishProgress(num, Double.valueOf(i));
             }
-            Log.d(TAG, "doInBackground: result "+result);
-            Log.d(TAG, "doInBackground: final average "+average);
             return result;
         }
 
         @Override
         protected void onProgressUpdate(Double... values) {
-            Log.d(TAG, "onProgressUpdate: "+values[0]+""+values[1]);
-            progressBar.setProgress(values[1].intValue());
+            Double sum = 0.0;
+            sum = sum + values [0];
+            int progress =values[1].intValue();
+            average = sum / (progress+1);
+            progressBar.setProgress(progress);
             txtprogresshappened.setText(i +"/" +selectedProgress);
-            txtaverage.setText(getResources().getString(R.string.average)+" " +values[0]);
+            txtaverage.setText(getResources().getString(R.string.average)+" " +average);
+            result.add(values[0]);
             resultList.notifyDataSetChanged();
         }
 
