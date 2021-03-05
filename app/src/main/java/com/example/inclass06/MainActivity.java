@@ -1,3 +1,7 @@
+/*Amruta Deshmukh and Komal Patel
+* InClass 06
+* MainActivity.java
+* */
 package com.example.inclass06;
 
 import androidx.annotation.NonNull;
