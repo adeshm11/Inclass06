@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
@@ -30,14 +29,13 @@ public class MainActivity extends AppCompatActivity {
     SeekBar seekBar;
     ArrayList<Double> threadArray = new ArrayList<>(20);
     ArrayAdapter threadAdapter;
+    ArrayAdapter blankadapter;
     ListView listviewresult;
     TextView txtprogress,txtprogresshappened,txtaverage;
     ArrayList<Double> result = new ArrayList<>();
     ArrayAdapter<Double> resultList;
     int arraySize;
-    Double average = 0.0;
     Double sum = 0.0;
-
     public int selectedProgress = 0;
 
     @Override
@@ -78,7 +76,9 @@ public class MainActivity extends AppCompatActivity {
                 if(progress == 0){
                     result.clear();
                     threadArray.clear();
-                    Toast.makeText(MainActivity.this, getResources().getString(R.string.select_complexity), Toast.LENGTH_SHORT).show();
+                    threadButton.setEnabled(false);
+                    btn_asynchtask.setEnabled(false);
+                    Toast.makeText(MainActivity.this, getResources().getString(R.string.select_complexity), Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
                 switch (msg.what){
                     case DoWorkThread.STATUS_START:
                         progressBar.setProgress(0);
-                        int progress = msg.getData().getInt(DoWorkThread.PROGRESS_KEY);
                         progressBar.setMax(selectedProgress);
                         break;
 
@@ -146,14 +145,18 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 threadArray.clear();
                 result.clear();
+                listviewresult.setAdapter(blankadapter);
+                listviewresult.isEnabled();
                 progressBar.setVisibility(View.VISIBLE);
+                if(selectedProgress == 0){
+                    Toast.makeText(MainActivity.this, getResources().getString(R.string.select_complexity), Toast.LENGTH_LONG).show();
+                }
                 txtprogresshappened.setText(getResources().getString(R.string.zero)+getResources().getString(R.string.slash)+
                         selectedProgress);
                 txtaverage.setText(getResources().getString(R.string.average)+" "+getResources().getString(R.string.avg_initial));
                 btn_asynchtask.setEnabled(false);
                 threadButton.setEnabled(false);
                 seekBar.setEnabled(false);
-
                 threadPool.execute(new DoWorkThread());
             }
         });
@@ -171,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             HeavyWork heavyWork = new HeavyWork();
             Bundle bundle = new Bundle();
-
             Message startMessage = new Message();
             startMessage.what = STATUS_START;
             bundle.putDouble(PROGRESS_KEY,selectedProgress);
@@ -224,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(Double... values) {
-
             sum = sum + values [0];
             Integer progress =values[1].intValue();
             average = sum / (progress+1);
